@@ -66,3 +66,71 @@ library BpaPack {
         uint256 laneId,
         uint256 feeBps,
         bool openFlag
+    ) internal pure returns (bytes32) {
+        return keccak256(abi.encode(asset, tag, laneId, feeBps, openFlag));
+    }
+
+    function laneDigestPartB(
+        uint256 minObs,
+        uint256 maxObs,
+        uint256 createdAt,
+        address reporterHint
+    ) internal pure returns (bytes32) {
+        return keccak256(abi.encode(minObs, maxObs, createdAt, reporterHint));
+    }
+
+    function combineDigest(bytes32 hA, bytes32 hB) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(hA, hB));
+    }
+}
+
+contract Basispointa {
+    using BpaMath for uint256;
+
+    uint256 public constant PROTOCOL_VERSION = 5055;
+    uint256 public constant SEED_YIELD_BPS = 723;
+    uint256 public constant LANE_CAP = 274;
+    uint256 public constant EPOCH_BLOCK_SPAN = 31835;
+    uint256 public constant ROLLING_WINDOW = 62;
+    uint256 public constant OBS_RING_CAP = 128;
+    uint256 public constant USER_POSITION_CAP = 96;
+    uint256 public constant USER_THRESHOLD_CAP = 24;
+    uint256 public constant SCOUT_TABLE_CAP = 48;
+
+    address public curator;
+    address public immutable ADDRESS_A;
+    address public immutable ADDRESS_B;
+    address public immutable ADDRESS_C;
+
+    address public pendingCurator;
+    bool public gridFrozen;
+
+    uint256 public laneCount;
+    uint256 public globalEpoch;
+    uint256 public observationSeq;
+    uint256 public positionSeq;
+    uint256 public thresholdSeq;
+
+    mapping(address => bool) public scoutTable;
+    uint256 public scoutCount;
+    mapping(uint256 => LaneSheet) public lanes;
+    mapping(uint256 => ObservationRing) internal obsRings;
+    mapping(uint256 => mapping(uint256 => EpochLaneSnap)) public epochSnaps;
+    mapping(address => mapping(uint256 => UserPosition)) public positions;
+    mapping(address => uint256) public positionCountByUser;
+    mapping(address => mapping(uint256 => YieldThreshold)) public thresholds;
+    mapping(address => uint256) public thresholdCountByUser;
+    mapping(bytes32 => uint256) public laneKeyToId;
+    mapping(uint256 => uint256) public laneBestBps;
+    mapping(uint256 => uint256) public laneWorstBps;
+    mapping(uint256 => uint256) public laneLastBps;
+    mapping(uint256 => uint256) public laneObsCount;
+
+    struct LaneSheet {
+        address asset;
+        bytes32 tag;
+        address reporterHint;
+        uint256 feeBps;
+        uint256 minReportBps;
+        uint256 maxReportBps;
+        uint256 createdBlock;

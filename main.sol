@@ -202,3 +202,71 @@ contract Basispointa {
     error BPA_ScoutCap();
     error BPA_ScoutExists(address scout);
     error BPA_ScoutAbsent(address scout);
+    error BPA_BadEpoch(uint256 epoch);
+    error BPA_SnapAlreadySealed(uint256 epoch, uint256 laneId);
+    error BPA_SnapNotSealed(uint256 epoch, uint256 laneId);
+    error BPA_RangeInverted(uint256 floorBps, uint256 ceilingBps);
+    error BPA_NoPendingCurator();
+    error BPA_PendingMismatch(address expected, address got);
+
+    event Opened(uint256 indexed laneId, address indexed asset, bytes32 indexed tag, uint256 feeBps);
+    event Tuned(uint256 indexed laneId, uint256 minReportBps, uint256 maxReportBps, bool intakeOpen);
+    event Archived(uint256 indexed laneId, address indexed curator);
+    event ScoutAdded(address indexed scout, address indexed curator);
+    event ScoutRemoved(address indexed scout, address indexed curator);
+    event Posted(
+        uint256 indexed laneId,
+        uint256 indexed obsId,
+        uint256 bps,
+        uint256 weight,
+        address indexed scout,
+        uint256 epochTag
+    );
+    event Rolled(uint256 indexed laneId, uint256 meanBps, uint256 obsFilled);
+    event Sealed(uint256 indexed epoch, uint256 indexed laneId, uint256 meanBps, uint256 peakBps, uint256 floorBps);
+    event PositionOpened(
+        address indexed user,
+        uint256 indexed positionId,
+        uint256 indexed laneId,
+        uint256 principalUnits,
+        uint256 entryBps
+    );
+    event PositionChecked(address indexed user, uint256 indexed positionId, uint256 currentBps, bool withinBand);
+    event PositionClosed(address indexed user, uint256 indexed positionId, uint256 exitBps);
+    event ThresholdSet(
+        address indexed user,
+        uint256 indexed thresholdId,
+        uint256 indexed laneId,
+        uint256 floorBps,
+        uint256 ceilingBps
+    );
+    event ThresholdToggled(address indexed user, uint256 indexed thresholdId, bool active);
+    event CuratorProposed(address indexed currentCurator, address indexed nominee);
+    event CuratorAccepted(address indexed previousCurator, address indexed newCurator);
+    event GridFreezeSet(bool frozen, address indexed curator);
+    event EpochAdvanced(uint256 indexed newEpoch, uint256 atBlock);
+
+    modifier whenUnfrozen() {
+        if (gridFrozen) revert BPA_Frozen();
+        _;
+    }
+
+    modifier onlyCurator() {
+        if (msg.sender != curator) revert BPA_NotCurator(msg.sender);
+        _;
+    }
+
+    modifier onlyScout() {
+        if (!scoutTable[msg.sender] && msg.sender != curator) revert BPA_NotScout(msg.sender);
+        _;
+    }
+
+    constructor() {
+        curator = msg.sender;
+        ADDRESS_A = 0xB8F1A8273c264314053706f2Fe1f8517d1FB4012;
+        ADDRESS_B = 0xaaF1AF06318Bdd0225856536032f4Dd4D9002fc2;
+        ADDRESS_C = 0x47FdA50E1FDb7ca47dC701a4c9383fcB3529B6Ca;
+        globalEpoch = 1;
+    }
+
+    // --- curator controls ---

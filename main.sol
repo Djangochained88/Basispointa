@@ -542,3 +542,71 @@ contract Basispointa {
         LaneSheet storage lane = lanes[laneId];
         if (lane.asset == address(0)) revert BPA_LaneMissing(laneId);
         return BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);
+    }
+
+    function yieldSpreadBps(uint256 laneId) external view returns (uint256) {
+        _requireLaneView(laneId);
+        uint256 best = laneBestBps[laneId];
+        uint256 worst = laneWorstBps[laneId];
+        if (worst == type(uint256).max) return 0;
+        return worst > best ? worst - best : best - worst;
+    }
+
+    function driftFromEntryBps(uint256 laneId, uint256 entryBps) external view returns (int256) {
+        _requireLaneView(laneId);
+        uint256 last = laneLastBps[laneId];
+        if (last >= entryBps) return int256(last - entryBps);
+        return -int256(entryBps - last);
+    }
+
+    function compareLanes(uint256 laneA, uint256 laneB) external view returns (int256 deltaBps) {
+        _requireLaneView(laneA);
+        _requireLaneView(laneB);
+        uint256 a = laneLastBps[laneA];
+        uint256 b = laneLastBps[laneB];
+        if (a >= b) return int256(a - b);
+        return -int256(b - a);
+    }
+
+    function laneHealthScore(uint256 laneId) public view returns (uint256 score) {
+        _requireLaneView(laneId);
+        return _laneHealthScoreInternal(laneId);
+    }
+
+    function laneDigest(uint256 laneId) external view returns (bytes32) {
+        LaneSheet storage lane = _requireLaneView(laneId);
+        bytes32 hA = BpaPack.laneDigestPartA(lane.asset, lane.tag, laneId, lane.feeBps, lane.intakeOpen);
+        bytes32 hB = BpaPack.laneDigestPartB(
+            lane.minReportBps,
+            lane.maxReportBps,
+            lane.createdBlock,
+            lane.reporterHint
+        );
+        return BpaPack.combineDigest(hA, hB);
+    }
+
+    function anchorFingerprint() external view returns (bytes32) {
+        bytes32 hA = keccak256(abi.encode(ADDRESS_A, ADDRESS_B));
+        bytes32 hB = keccak256(abi.encode(ADDRESS_C, PROTOCOL_VERSION));
+        return BpaPack.combineDigest(hA, hB);
+    }
+
+    function configSheet()
+        external
+        view
+        returns (
+            address curator_,
+            address addressA_,
+            address addressB_,
+            address addressC_,
+            bool gridFrozen_,
+            uint256 epoch_,
+            uint256 laneTotal_
+        )
+    {
+        return (curator, ADDRESS_A, ADDRESS_B, ADDRESS_C, gridFrozen, globalEpoch, laneCount);
+    }
+
+    function laneSummary(uint256 laneId)
+        external
+        view

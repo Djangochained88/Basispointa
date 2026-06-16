@@ -270,3 +270,71 @@ contract Basispointa {
     }
 
     // --- curator controls ---
+
+    function proposeCurator(address nominee) external onlyCurator whenUnfrozen {
+        if (nominee == address(0)) revert BPA_ZeroAddress();
+        pendingCurator = nominee;
+        emit CuratorProposed(curator, nominee);
+    }
+
+    function acceptCurator() external whenUnfrozen {
+        if (pendingCurator == address(0)) revert BPA_NoPendingCurator();
+        if (msg.sender != pendingCurator) revert BPA_PendingMismatch(pendingCurator, msg.sender);
+        address previous = curator;
+        curator = msg.sender;
+        pendingCurator = address(0);
+        emit CuratorAccepted(previous, msg.sender);
+    }
+
+    function setGridFrozen(bool frozen) external onlyCurator {
+        gridFrozen = frozen;
+        emit GridFreezeSet(frozen, msg.sender);
+    }
+
+    function addScout(address scout) external onlyCurator whenUnfrozen {
+        if (scout == address(0)) revert BPA_ZeroAddress();
+        if (scoutTable[scout]) revert BPA_ScoutExists(scout);
+        if (scoutCount >= SCOUT_TABLE_CAP) revert BPA_ScoutCap();
+        scoutTable[scout] = true;
+        unchecked { scoutCount += 1; }
+        emit ScoutAdded(scout, msg.sender);
+    }
+
+    function removeScout(address scout) external onlyCurator whenUnfrozen {
+        if (!scoutTable[scout]) revert BPA_ScoutAbsent(scout);
+        scoutTable[scout] = false;
+        unchecked { scoutCount -= 1; }
+        emit ScoutRemoved(scout, msg.sender);
+    }
+
+    function advanceEpoch() external onlyCurator whenUnfrozen {
+        unchecked {
+            globalEpoch += 1;
+        }
+        emit EpochAdvanced(globalEpoch, block.number);
+    }
+
+    // --- lane lifecycle ---
+
+    function openLane(
+        address asset,
+        bytes32 tag,
+        address reporterHint,
+        uint256 feeBps,
+        uint256 minReportBps,
+        uint256 maxReportBps
+    ) external onlyCurator whenUnfrozen returns (uint256 laneId) {
+        if (asset == address(0)) revert BPA_ZeroAddress();
+        if (laneCount >= LANE_CAP) revert BPA_LaneCap();
+        if (minReportBps > maxReportBps) revert BPA_RangeInverted(minReportBps, maxReportBps);
+        bytes32 key = BpaPack.packLaneKey(asset, tag);
+        if (laneKeyToId[key] != 0) revert BPA_DuplicateLane(key);
+
+        unchecked {
+            laneCount += 1;
+            laneId = laneCount;
+        }
+
+        LaneSheet storage lane = lanes[laneId];
+        lane.asset = asset;
+        lane.tag = tag;

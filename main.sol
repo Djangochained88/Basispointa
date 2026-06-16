@@ -134,3 +134,71 @@ contract Basispointa {
         uint256 minReportBps;
         uint256 maxReportBps;
         uint256 createdBlock;
+        uint256 obsHead;
+        uint256 obsTail;
+        uint256 obsFilled;
+        uint256 rollingSum;
+        uint256 rollingWeight;
+        bool intakeOpen;
+        bool archived;
+    }
+
+    struct ObservationRing {
+        mapping(uint256 => ObsCell) cells;
+    }
+
+    struct ObsCell {
+        uint256 bps;
+        uint256 weight;
+        uint256 blockNum;
+        address scout;
+        uint256 epochTag;
+    }
+
+    struct EpochLaneSnap {
+        uint256 meanBps;
+        uint256 peakBps;
+        uint256 floorBps;
+        uint256 sampleCount;
+        uint256 sealedBlock;
+        bool sealed;
+    }
+
+    struct UserPosition {
+        uint256 laneId;
+        uint256 principalUnits;
+        uint256 entryBps;
+        uint256 openedBlock;
+        uint256 lastCheckBlock;
+        bool closed;
+    }
+
+    struct YieldThreshold {
+        uint256 laneId;
+        uint256 floorBps;
+        uint256 ceilingBps;
+        bool active;
+        bytes32 labelHash;
+    }
+
+    error BPA_Frozen();
+    error BPA_NotCurator(address caller);
+    error BPA_NotScout(address caller);
+    error BPA_ZeroAddress();
+    error BPA_ZeroAmount();
+    error BPA_LaneCap();
+    error BPA_LaneMissing(uint256 laneId);
+    error BPA_LaneClosed(uint256 laneId);
+    error BPA_LaneArchived(uint256 laneId);
+    error BPA_DuplicateLane(bytes32 laneKey);
+    error BPA_BpsOutOfBand(uint256 bps, uint256 lo, uint256 hi);
+    error BPA_WeightZero();
+    error BPA_PositionCap();
+    error BPA_PositionMissing(uint256 positionId);
+    error BPA_PositionClosed(uint256 positionId);
+    error BPA_NotPositionOwner(address caller, uint256 positionId);
+    error BPA_ThresholdCap();
+    error BPA_ThresholdMissing(uint256 thresholdId);
+    error BPA_ScoutCap();
+    error BPA_ScoutExists(address scout);
+    error BPA_ScoutAbsent(address scout);

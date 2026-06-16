@@ -406,3 +406,71 @@ contract Basispointa {
         unchecked {
             lane.obsHead = (lane.obsHead + 1) % OBS_RING_CAP;
             if (lane.obsFilled < OBS_RING_CAP) {
+                lane.obsFilled += 1;
+            } else {
+                lane.obsTail = (lane.obsTail + 1) % OBS_RING_CAP;
+            }
+            lane.rollingSum += bps * weight;
+            lane.rollingWeight += weight;
+            observationSeq += 1;
+            laneObsCount[laneId] += 1;
+        }
+
+        if (bps > laneBestBps[laneId]) laneBestBps[laneId] = bps;
+        if (bps < laneWorstBps[laneId]) laneWorstBps[laneId] = bps;
+        laneLastBps[laneId] = bps;
+
+        emit Posted(laneId, observationSeq, bps, weight, msg.sender, globalEpoch);
+        emit Rolled(laneId, rollingMeanBps(laneId), lane.obsFilled);
+    }
+
+    function sealEpochLane(uint256 epoch, uint256 laneId) external onlyCurator whenUnfrozen {
+        if (epoch == 0 || epoch > globalEpoch) revert BPA_BadEpoch(epoch);
+        _requireLane(laneId);
+        EpochLaneSnap storage snap = epochSnaps[epoch][laneId];
+        if (snap.sealed) revert BPA_SnapAlreadySealed(epoch, laneId);
+
+        (uint256 meanBps, uint256 peakBps, uint256 floorBps, uint256 samples) = _epochStats(laneId, epoch);
+        snap.meanBps = meanBps;
+        snap.peakBps = peakBps;
+        snap.floorBps = floorBps;
+        snap.sampleCount = samples;
+        snap.sealedBlock = block.number;
+        snap.sealed = true;
+
+        emit Sealed(epoch, laneId, meanBps, peakBps, floorBps);
+    }
+
+    // --- positions ---
+
+    function openPosition(uint256 laneId, uint256 principalUnits, uint256 entryBps)
+        external
+        whenUnfrozen
+        returns (uint256 positionId)
+    {
+        if (principalUnits == 0) revert BPA_ZeroAmount();
+        LaneSheet storage lane = _requireLane(laneId);
+        if (lane.archived) revert BPA_LaneArchived(laneId);
+        if (entryBps < lane.minReportBps || entryBps > lane.maxReportBps) {
+            revert BPA_BpsOutOfBand(entryBps, lane.minReportBps, lane.maxReportBps);
+        }
+        if (positionCountByUser[msg.sender] >= USER_POSITION_CAP) revert BPA_PositionCap();
+
+        unchecked {
+            positionSeq += 1;
+            positionId = positionSeq;
+            positionCountByUser[msg.sender] += 1;
+        }
+
+        positions[msg.sender][positionId] = UserPosition({
+            laneId: laneId,
+            principalUnits: principalUnits,
+            entryBps: entryBps,
+            openedBlock: block.number,
+            lastCheckBlock: block.number,
+            closed: false
+        });
+
+        emit PositionOpened(msg.sender, positionId, laneId, principalUnits, entryBps);
+    }
+

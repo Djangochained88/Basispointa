@@ -474,3 +474,71 @@ contract Basispointa {
         emit PositionOpened(msg.sender, positionId, laneId, principalUnits, entryBps);
     }
 
+    function checkPosition(uint256 positionId) external whenUnfrozen returns (bool withinBand) {
+        UserPosition storage pos = _requireOpenPosition(msg.sender, positionId);
+        uint256 current = laneLastBps[pos.laneId];
+        withinBand = _withinLaneBand(pos.laneId, current);
+        pos.lastCheckBlock = block.number;
+        emit PositionChecked(msg.sender, positionId, current, withinBand);
+    }
+
+    function closePosition(uint256 positionId) external whenUnfrozen {
+        UserPosition storage pos = _requireOpenPosition(msg.sender, positionId);
+        pos.closed = true;
+        uint256 exitBps = laneLastBps[pos.laneId];
+        emit PositionClosed(msg.sender, positionId, exitBps);
+    }
+
+    // --- thresholds ---
+
+    function setThreshold(
+        uint256 laneId,
+        uint256 floorBps,
+        uint256 ceilingBps,
+        bytes32 labelHash
+    ) external whenUnfrozen returns (uint256 thresholdId) {
+        _requireLane(laneId);
+        if (floorBps > ceilingBps) revert BPA_RangeInverted(floorBps, ceilingBps);
+        if (thresholdCountByUser[msg.sender] >= USER_THRESHOLD_CAP) revert BPA_ThresholdCap();
+
+        unchecked {
+            thresholdSeq += 1;
+            thresholdId = thresholdSeq;
+            thresholdCountByUser[msg.sender] += 1;
+        }
+
+        thresholds[msg.sender][thresholdId] = YieldThreshold({
+            laneId: laneId,
+            floorBps: floorBps,
+            ceilingBps: ceilingBps,
+            active: true,
+            labelHash: labelHash
+        });
+
+        emit ThresholdSet(msg.sender, thresholdId, laneId, floorBps, ceilingBps);
+    }
+
+    function toggleThreshold(uint256 thresholdId, bool active) external whenUnfrozen {
+        YieldThreshold storage th = thresholds[msg.sender][thresholdId];
+        if (th.laneId == 0 && !active && th.floorBps == 0 && th.ceilingBps == 0) {
+            revert BPA_ThresholdMissing(thresholdId);
+        }
+        th.active = active;
+        emit ThresholdToggled(msg.sender, thresholdId, active);
+    }
+
+    function evaluateThreshold(uint256 thresholdId) external view returns (bool ok, uint256 currentBps) {
+        YieldThreshold storage th = thresholds[msg.sender][thresholdId];
+        if (th.laneId == 0 && th.floorBps == 0 && th.ceilingBps == 0) {
+            revert BPA_ThresholdMissing(thresholdId);
+        }
+        currentBps = laneLastBps[th.laneId];
+        ok = th.active && currentBps >= th.floorBps && currentBps <= th.ceilingBps;
+    }
+
+    // --- yield checker views ---
+
+    function rollingMeanBps(uint256 laneId) public view returns (uint256) {
+        LaneSheet storage lane = lanes[laneId];
+        if (lane.asset == address(0)) revert BPA_LaneMissing(laneId);
+        return BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);

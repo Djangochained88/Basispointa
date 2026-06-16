@@ -338,3 +338,71 @@ contract Basispointa {
         LaneSheet storage lane = lanes[laneId];
         lane.asset = asset;
         lane.tag = tag;
+        lane.reporterHint = reporterHint;
+        lane.feeBps = feeBps;
+        lane.minReportBps = minReportBps;
+        lane.maxReportBps = maxReportBps;
+        lane.createdBlock = block.number;
+        lane.intakeOpen = true;
+
+        laneKeyToId[key] = laneId;
+        laneBestBps[laneId] = 0;
+        laneWorstBps[laneId] = type(uint256).max;
+        laneLastBps[laneId] = SEED_YIELD_BPS;
+
+        emit Opened(laneId, asset, tag, feeBps);
+    }
+
+    function tuneLane(
+        uint256 laneId,
+        uint256 minReportBps,
+        uint256 maxReportBps,
+        bool intakeOpen
+    ) external onlyCurator whenUnfrozen {
+        LaneSheet storage lane = _requireLane(laneId);
+        if (lane.archived) revert BPA_LaneArchived(laneId);
+        if (minReportBps > maxReportBps) revert BPA_RangeInverted(minReportBps, maxReportBps);
+        lane.minReportBps = minReportBps;
+        lane.maxReportBps = maxReportBps;
+        lane.intakeOpen = intakeOpen;
+        emit Tuned(laneId, minReportBps, maxReportBps, intakeOpen);
+    }
+
+    function archiveLane(uint256 laneId) external onlyCurator whenUnfrozen {
+        LaneSheet storage lane = _requireLane(laneId);
+        lane.archived = true;
+        lane.intakeOpen = false;
+        emit Archived(laneId, msg.sender);
+    }
+
+    // --- observations ---
+
+    function postObservation(uint256 laneId, uint256 bps, uint256 weight) external onlyScout whenUnfrozen {
+        if (weight == 0) revert BPA_WeightZero();
+        LaneSheet storage lane = _requireLane(laneId);
+        if (lane.archived) revert BPA_LaneArchived(laneId);
+        if (!lane.intakeOpen) revert BPA_LaneClosed(laneId);
+        if (bps < lane.minReportBps || bps > lane.maxReportBps) {
+            revert BPA_BpsOutOfBand(bps, lane.minReportBps, lane.maxReportBps);
+        }
+
+        ObservationRing storage ring = obsRings[laneId];
+        if (lane.obsFilled >= ROLLING_WINDOW) {
+            uint256 evictIdx = (lane.obsHead + OBS_RING_CAP - ROLLING_WINDOW) % OBS_RING_CAP;
+            ObsCell storage evicted = ring.cells[evictIdx];
+            lane.rollingSum -= evicted.bps * evicted.weight;
+            lane.rollingWeight -= evicted.weight;
+        }
+
+        uint256 slot = lane.obsHead;
+        ring.cells[slot] = ObsCell({
+            bps: bps,
+            weight: weight,
+            blockNum: block.number,
+            scout: msg.sender,
+            epochTag: globalEpoch
+        });
+
+        unchecked {
+            lane.obsHead = (lane.obsHead + 1) % OBS_RING_CAP;
+            if (lane.obsFilled < OBS_RING_CAP) {

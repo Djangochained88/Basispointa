@@ -950,3 +950,71 @@ contract Basispointa {
     function laneBpsBundle34(uint256 startLaneId) external view returns (uint256[8] memory bundle) {
         for (uint256 j = 0; j < 8; ++j) {
             uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle35(uint256 startLaneId) external view returns (uint256[2] memory bundle) {
+        for (uint256 j = 0; j < 2; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle36(uint256 startLaneId) external view returns (uint256[3] memory bundle) {
+        for (uint256 j = 0; j < 3; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle37(uint256 startLaneId) external view returns (uint256[4] memory bundle) {
+        for (uint256 j = 0; j < 4; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle38(uint256 startLaneId) external view returns (uint256[5] memory bundle) {
+        for (uint256 j = 0; j < 5; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle39(uint256 startLaneId) external view returns (uint256[6] memory bundle) {
+        for (uint256 j = 0; j < 6; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle40(uint256 startLaneId) external view returns (uint256[7] memory bundle) {
+        for (uint256 j = 0; j < 7; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function rollingMeanBundle1(uint256 startLaneId) external view returns (uint256[4] memory means) {
+        for (uint256 j = 0; j < 4; ++j) {
+            uint256 laneId = startLaneId + j;
+            LaneSheet storage lane = lanes[laneId];
+            means[j] = lane.asset == address(0)
+                ? 0
+                : BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);
+        }
+    }
+    function rollingMeanBundle2(uint256 startLaneId) external view returns (uint256[5] memory means) {
+        for (uint256 j = 0; j < 5; ++j) {
+            uint256 laneId = startLaneId + j;
+            LaneSheet storage lane = lanes[laneId];
+            means[j] = lane.asset == address(0)
+                ? 0
+                : BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);
+        }
+    }
+    function rollingMeanBundle3(uint256 startLaneId) external view returns (uint256[6] memory means) {
+        for (uint256 j = 0; j < 6; ++j) {
+            uint256 laneId = startLaneId + j;
+            LaneSheet storage lane = lanes[laneId];
+            means[j] = lane.asset == address(0)
+                ? 0
+                : BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);
+        }
+    }
+    function rollingMeanBundle4(uint256 startLaneId) external view returns (uint256[7] memory means) {
+        for (uint256 j = 0; j < 7; ++j) {

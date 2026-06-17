@@ -1018,3 +1018,71 @@ contract Basispointa {
     }
     function rollingMeanBundle4(uint256 startLaneId) external view returns (uint256[7] memory means) {
         for (uint256 j = 0; j < 7; ++j) {
+            uint256 laneId = startLaneId + j;
+            LaneSheet storage lane = lanes[laneId];
+            means[j] = lane.asset == address(0)
+                ? 0
+                : BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);
+        }
+    }
+    function rollingMeanBundle5(uint256 startLaneId) external view returns (uint256[3] memory means) {
+        for (uint256 j = 0; j < 3; ++j) {
+            uint256 laneId = startLaneId + j;
+            LaneSheet storage lane = lanes[laneId];
+            means[j] = lane.asset == address(0)
+                ? 0
+                : BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);
+        }
+    }
+    function rollingMeanBundle6(uint256 startLaneId) external view returns (uint256[4] memory means) {
+        for (uint256 j = 0; j < 4; ++j) {
+            uint256 laneId = startLaneId + j;
+            LaneSheet storage lane = lanes[laneId];
+            means[j] = lane.asset == address(0)
+                ? 0
+                : BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);
+        }
+    }
+    function rollingMeanBundle7(uint256 startLaneId) external view returns (uint256[5] memory means) {
+        for (uint256 j = 0; j < 5; ++j) {
+            uint256 laneId = startLaneId + j;
+            LaneSheet storage lane = lanes[laneId];
+            means[j] = lane.asset == address(0)
+                ? 0
+                : BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);
+        }
+    }
+    function rollingMeanBundle8(uint256 startLaneId) external view returns (uint256[6] memory means) {
+        for (uint256 j = 0; j < 6; ++j) {
+            uint256 laneId = startLaneId + j;
+            LaneSheet storage lane = lanes[laneId];
+            means[j] = lane.asset == address(0)
+                ? 0
+                : BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);
+        }
+    }
+    function rollingMeanBundle9(uint256 startLaneId) external view returns (uint256[7] memory means) {
+        for (uint256 j = 0; j < 7; ++j) {
+            uint256 laneId = startLaneId + j;
+            LaneSheet storage lane = lanes[laneId];
+            means[j] = lane.asset == address(0)
+                ? 0
+                : BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);
+        }
+    }
+    function rollingMeanBundle10(uint256 startLaneId) external view returns (uint256[3] memory means) {
+        for (uint256 j = 0; j < 3; ++j) {
+            uint256 laneId = startLaneId + j;
+            LaneSheet storage lane = lanes[laneId];
+            means[j] = lane.asset == address(0)
+                ? 0
+                : BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);
+        }
+    }
+    function rollingMeanBundle11(uint256 startLaneId) external view returns (uint256[4] memory means) {
+        for (uint256 j = 0; j < 4; ++j) {
+            uint256 laneId = startLaneId + j;
+            LaneSheet storage lane = lanes[laneId];
+            means[j] = lane.asset == address(0)
+                ? 0
+                : BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);

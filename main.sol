@@ -610,3 +610,71 @@ contract Basispointa {
     function laneSummary(uint256 laneId)
         external
         view
+        returns (
+            address asset,
+            bytes32 tag,
+            uint256 lastBps,
+            uint256 meanBps,
+            uint256 bestBps,
+            uint256 worstBps,
+            uint256 obsCount,
+            bool intakeOpen,
+            bool archived
+        )
+    {
+        LaneSheet storage lane = _requireLaneView(laneId);
+        asset = lane.asset;
+        tag = lane.tag;
+        lastBps = laneLastBps[laneId];
+        meanBps = BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);
+        bestBps = laneBestBps[laneId];
+        worstBps = laneWorstBps[laneId];
+        obsCount = laneObsCount[laneId];
+        intakeOpen = lane.intakeOpen;
+        archived = lane.archived;
+    }
+
+    function observationAt(uint256 laneId, uint256 ringIndex)
+        external
+        view
+        returns (uint256 bps, uint256 weight, uint256 blockNum, address scout, uint256 epochTag)
+    {
+        LaneSheet storage lane = _requireLaneView(laneId);
+        if (ringIndex >= lane.obsFilled) revert BPA_ZeroAmount();
+        uint256 idx = (lane.obsTail + ringIndex) % OBS_RING_CAP;
+        ObsCell storage cell = obsRings[laneId].cells[idx];
+        return (cell.bps, cell.weight, cell.blockNum, cell.scout, cell.epochTag);
+    }
+
+    function positionView(address user, uint256 positionId)
+        external
+        view
+        returns (
+            uint256 laneId,
+            uint256 principalUnits,
+            uint256 entryBps,
+            uint256 openedBlock,
+            uint256 lastCheckBlock,
+            bool closed,
+            uint256 currentBps,
+            int256 driftBps
+        )
+    {
+        UserPosition storage pos = positions[user][positionId];
+        if (pos.openedBlock == 0) revert BPA_PositionMissing(positionId);
+        laneId = pos.laneId;
+        principalUnits = pos.principalUnits;
+        entryBps = pos.entryBps;
+        openedBlock = pos.openedBlock;
+        lastCheckBlock = pos.lastCheckBlock;
+        closed = pos.closed;
+        currentBps = laneLastBps[laneId];
+        if (currentBps >= entryBps) driftBps = int256(currentBps - entryBps);
+        else driftBps = -int256(entryBps - currentBps);
+    }
+
+    function epochSnapView(uint256 epoch, uint256 laneId)
+        external
+        view
+        returns (uint256 meanBps, uint256 peakBps, uint256 floorBps, uint256 sampleCount, bool sealed)
+    {

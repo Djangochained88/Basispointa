@@ -1290,3 +1290,71 @@ contract Basispointa {
         }
     }
     function healthScoreBundle6(uint256 startLaneId) external view returns (uint256[2] memory scores) {
+        for (uint256 k = 0; k < 2; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle7(uint256 startLaneId) external view returns (uint256[3] memory scores) {
+        for (uint256 k = 0; k < 3; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle8(uint256 startLaneId) external view returns (uint256[4] memory scores) {
+        for (uint256 k = 0; k < 4; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle9(uint256 startLaneId) external view returns (uint256[5] memory scores) {
+        for (uint256 k = 0; k < 5; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle10(uint256 startLaneId) external view returns (uint256[6] memory scores) {
+        for (uint256 k = 0; k < 6; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle11(uint256 startLaneId) external view returns (uint256[7] memory scores) {
+        for (uint256 k = 0; k < 7; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle12(uint256 startLaneId) external view returns (uint256[2] memory scores) {
+        for (uint256 k = 0; k < 2; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle13(uint256 startLaneId) external view returns (uint256[3] memory scores) {
+        for (uint256 k = 0; k < 3; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle14(uint256 startLaneId) external view returns (uint256[4] memory scores) {
+        for (uint256 k = 0; k < 4; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle15(uint256 startLaneId) external view returns (uint256[5] memory scores) {
+        for (uint256 k = 0; k < 5; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle16(uint256 startLaneId) external view returns (uint256[6] memory scores) {
+        for (uint256 k = 0; k < 6; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle17(uint256 startLaneId) external view returns (uint256[7] memory scores) {
+        for (uint256 k = 0; k < 7; ++k) {
+            uint256 laneId = startLaneId + k;

@@ -1766,3 +1766,71 @@ contract Basispointa {
         for (uint256 i = 0; i < peerLaneIds.length; ++i) {
             uint256 peerId = peerLaneIds[i];
             if (peerId == candidateLaneId) continue;
+            if (lanes[peerId].asset == address(0)) continue;
+            if (laneLastBps[peerId] > candidateBps) {
+                unchecked { rank += 1; }
+            }
+        }
+    }
+    function rankLaneByLastBps_2(uint256 candidateLaneId, uint256[] calldata peerLaneIds)
+        external
+        view
+        returns (uint256 rank, uint256 candidateBps)
+    {
+        if (peerLaneIds.length == 0) revert BPA_ZeroAmount();
+        _requireLaneView(candidateLaneId);
+        candidateBps = laneLastBps[candidateLaneId];
+        rank = 1;
+        for (uint256 i = 0; i < peerLaneIds.length; ++i) {
+            uint256 peerId = peerLaneIds[i];
+            if (peerId == candidateLaneId) continue;
+            if (lanes[peerId].asset == address(0)) continue;
+            if (laneLastBps[peerId] > candidateBps) {
+                unchecked { rank += 1; }
+            }
+        }
+    }
+    function rankLaneByLastBps_3(uint256 candidateLaneId, uint256[] calldata peerLaneIds)
+        external
+        view
+        returns (uint256 rank, uint256 candidateBps)
+    {
+        if (peerLaneIds.length == 0) revert BPA_ZeroAmount();
+        _requireLaneView(candidateLaneId);
+        candidateBps = laneLastBps[candidateLaneId];
+        rank = 1;
+        for (uint256 i = 0; i < peerLaneIds.length; ++i) {
+            uint256 peerId = peerLaneIds[i];
+            if (peerId == candidateLaneId) continue;
+            if (lanes[peerId].asset == address(0)) continue;
+            if (laneLastBps[peerId] > candidateBps) {
+                unchecked { rank += 1; }
+            }
+        }
+    }
+    function rankLaneByLastBps_4(uint256 candidateLaneId, uint256[] calldata peerLaneIds)
+        external
+        view
+        returns (uint256 rank, uint256 candidateBps)
+    {
+        if (peerLaneIds.length == 0) revert BPA_ZeroAmount();
+        _requireLaneView(candidateLaneId);
+        candidateBps = laneLastBps[candidateLaneId];
+        rank = 1;
+        for (uint256 i = 0; i < peerLaneIds.length; ++i) {
+            uint256 peerId = peerLaneIds[i];
+            if (peerId == candidateLaneId) continue;
+            if (lanes[peerId].asset == address(0)) continue;
+            if (laneLastBps[peerId] > candidateBps) {
+                unchecked { rank += 1; }
+            }
+        }
+    }
+    function rankLaneByLastBps_5(uint256 candidateLaneId, uint256[] calldata peerLaneIds)
+        external
+        view
+        returns (uint256 rank, uint256 candidateBps)
+    {
+        if (peerLaneIds.length == 0) revert BPA_ZeroAmount();
+        _requireLaneView(candidateLaneId);
+        candidateBps = laneLastBps[candidateLaneId];

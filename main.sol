@@ -1902,3 +1902,57 @@ contract Basispointa {
         external
         view
         returns (uint256 rank, uint256 candidateBps)
+    {
+        if (peerLaneIds.length == 0) revert BPA_ZeroAmount();
+        _requireLaneView(candidateLaneId);
+        candidateBps = laneLastBps[candidateLaneId];
+        rank = 1;
+        for (uint256 i = 0; i < peerLaneIds.length; ++i) {
+            uint256 peerId = peerLaneIds[i];
+            if (peerId == candidateLaneId) continue;
+            if (lanes[peerId].asset == address(0)) continue;
+            if (laneLastBps[peerId] > candidateBps) {
+                unchecked { rank += 1; }
+            }
+        }
+    }
+    function rankLaneByLastBps_10(uint256 candidateLaneId, uint256[] calldata peerLaneIds)
+        external
+        view
+        returns (uint256 rank, uint256 candidateBps)
+    {
+        if (peerLaneIds.length == 0) revert BPA_ZeroAmount();
+        _requireLaneView(candidateLaneId);
+        candidateBps = laneLastBps[candidateLaneId];
+        rank = 1;
+        for (uint256 i = 0; i < peerLaneIds.length; ++i) {
+            uint256 peerId = peerLaneIds[i];
+            if (peerId == candidateLaneId) continue;
+            if (lanes[peerId].asset == address(0)) continue;
+            if (laneLastBps[peerId] > candidateBps) {
+                unchecked { rank += 1; }
+            }
+        }
+    }
+    function projectedAccrualBps(
+        uint256 principalUnits,
+        uint256 annualBps,
+        uint256 elapsedBlocks
+    ) external pure returns (uint256 accrualBps) {
+        if (principalUnits == 0) revert BPA_ZeroAmount();
+        accrualBps = BpaMath.mulBps(principalUnits, annualBps);
+        accrualBps = (accrualBps * elapsedBlocks) / EPOCH_BLOCK_SPAN;
+    }
+
+    function isObservationStale(uint256 laneId, uint256 maxStaleBlocks) external view returns (bool stale) {
+        LaneSheet storage lane = _requireLaneView(laneId);
+        if (lane.obsFilled == 0) return true;
+        uint256 idx = (lane.obsHead + OBS_RING_CAP - 1) % OBS_RING_CAP;
+        ObsCell storage cell = obsRings[laneId].cells[idx];
+        stale = block.number > cell.blockNum + maxStaleBlocks;
+    }
+
+    function meetsMinimumSamples(uint256 laneId, uint256 minSamples) external view returns (bool) {
+        return lanes[laneId].obsFilled >= minSamples;
+    }
+}

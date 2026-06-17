@@ -678,3 +678,71 @@ contract Basispointa {
         view
         returns (uint256 meanBps, uint256 peakBps, uint256 floorBps, uint256 sampleCount, bool sealed)
     {
+        EpochLaneSnap storage snap = epochSnaps[epoch][laneId];
+        return (snap.meanBps, snap.peakBps, snap.floorBps, snap.sampleCount, snap.sealed);
+    }
+
+    // --- internals ---
+
+    function _requireLane(uint256 laneId) internal view returns (LaneSheet storage lane) {
+        lane = lanes[laneId];
+        if (lane.asset == address(0)) revert BPA_LaneMissing(laneId);
+    }
+
+    function _requireLaneView(uint256 laneId) internal view returns (LaneSheet storage lane) {
+        lane = lanes[laneId];
+        if (lane.asset == address(0)) revert BPA_LaneMissing(laneId);
+    }
+
+    function _requireOpenPosition(address user, uint256 positionId)
+        internal
+        view
+        returns (UserPosition storage pos)
+    {
+        pos = positions[user][positionId];
+        if (pos.openedBlock == 0) revert BPA_PositionMissing(positionId);
+        if (pos.closed) revert BPA_PositionClosed(positionId);
+    }
+
+    function _withinLaneBand(uint256 laneId, uint256 bps) internal view returns (bool) {
+        LaneSheet storage lane = lanes[laneId];
+        return bps >= lane.minReportBps && bps <= lane.maxReportBps;
+    }
+
+    function _laneHealthScoreInternal(uint256 laneId) internal view returns (uint256 score) {
+        LaneSheet storage lane = lanes[laneId];
+        if (lane.asset == address(0)) return 0;
+        uint256 mean = BpaMath.weightedMean(lane.rollingSum, lane.rollingWeight);
+        uint256 spread = laneWorstBps[laneId] == type(uint256).max
+            ? 0
+            : BpaMath.absDiff(laneBestBps[laneId], laneWorstBps[laneId]);
+        uint256 density = lane.obsFilled * BpaMath.BPS_DENOM / OBS_RING_CAP;
+        score = mean + density;
+        if (spread > mean) {
+            score = score > spread - mean ? score - (spread - mean) : 0;
+        }
+    }
+
+    function _epochStats(uint256 laneId, uint256 epoch)
+        internal
+        view
+        returns (uint256 meanBps, uint256 peakBps, uint256 floorBps, uint256 samples)
+    {
+        LaneSheet storage lane = lanes[laneId];
+        uint256 sum;
+        uint256 weightSum;
+        peakBps = 0;
+        floorBps = type(uint256).max;
+        ObservationRing storage ring = obsRings[laneId];
+        uint256 n = lane.obsFilled;
+        for (uint256 i = 0; i < n; ++i) {
+            uint256 idx = (lane.obsTail + i) % OBS_RING_CAP;
+            ObsCell storage cell = ring.cells[idx];
+            if (cell.epochTag != epoch) continue;
+            samples += 1;
+            sum += cell.bps * cell.weight;
+            weightSum += cell.weight;
+            if (cell.bps > peakBps) peakBps = cell.bps;
+            if (cell.bps < floorBps) floorBps = cell.bps;
+        }
+        meanBps = BpaMath.weightedMean(sum, weightSum);

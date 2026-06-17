@@ -1358,3 +1358,71 @@ contract Basispointa {
     function healthScoreBundle17(uint256 startLaneId) external view returns (uint256[7] memory scores) {
         for (uint256 k = 0; k < 7; ++k) {
             uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle18(uint256 startLaneId) external view returns (uint256[2] memory scores) {
+        for (uint256 k = 0; k < 2; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle19(uint256 startLaneId) external view returns (uint256[3] memory scores) {
+        for (uint256 k = 0; k < 3; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function healthScoreBundle20(uint256 startLaneId) external view returns (uint256[4] memory scores) {
+        for (uint256 k = 0; k < 4; ++k) {
+            uint256 laneId = startLaneId + k;
+            scores[k] = _laneHealthScoreInternal(laneId);
+        }
+    }
+    function scanThresholdsTier1(address user, uint256 startId, uint256 limit)
+        external
+        view
+        returns (uint256[] memory failingIds)
+    {
+        if (limit == 0) revert BPA_ZeroAmount();
+        uint256[] memory temp = new uint256[](limit);
+        uint256 found;
+        uint256 total = thresholdCountByUser[user];
+        for (uint256 i = 0; i < limit; ++i) {
+            uint256 tid = startId + i;
+            if (tid == 0 || tid > total) continue;
+            YieldThreshold storage th = thresholds[user][tid];
+            if (!th.active) continue;
+            uint256 cur = laneLastBps[th.laneId];
+            if (cur < th.floorBps || cur > th.ceilingBps) {
+                temp[found] = tid;
+                unchecked { found += 1; }
+            }
+        }
+        failingIds = new uint256[](found);
+        for (uint256 j = 0; j < found; ++j) {
+            failingIds[j] = temp[j];
+        }
+    }
+    function scanThresholdsTier2(address user, uint256 startId, uint256 limit)
+        external
+        view
+        returns (uint256[] memory failingIds)
+    {
+        if (limit == 0) revert BPA_ZeroAmount();
+        uint256[] memory temp = new uint256[](limit);
+        uint256 found;
+        uint256 total = thresholdCountByUser[user];
+        for (uint256 i = 0; i < limit; ++i) {
+            uint256 tid = startId + i;
+            if (tid == 0 || tid > total) continue;
+            YieldThreshold storage th = thresholds[user][tid];
+            if (!th.active) continue;
+            uint256 cur = laneLastBps[th.laneId];
+            if (cur < th.floorBps || cur > th.ceilingBps) {
+                temp[found] = tid;
+                unchecked { found += 1; }
+            }
+        }
+        failingIds = new uint256[](found);
+        for (uint256 j = 0; j < found; ++j) {

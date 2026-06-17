@@ -746,3 +746,71 @@ contract Basispointa {
             if (cell.bps < floorBps) floorBps = cell.bps;
         }
         meanBps = BpaMath.weightedMean(sum, weightSum);
+        if (floorBps == type(uint256).max) floorBps = 0;
+    }
+
+    function laneBpsBundle1(uint256 startLaneId) external view returns (uint256[3] memory bundle) {
+        for (uint256 j = 0; j < 3; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle2(uint256 startLaneId) external view returns (uint256[4] memory bundle) {
+        for (uint256 j = 0; j < 4; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle3(uint256 startLaneId) external view returns (uint256[5] memory bundle) {
+        for (uint256 j = 0; j < 5; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle4(uint256 startLaneId) external view returns (uint256[6] memory bundle) {
+        for (uint256 j = 0; j < 6; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle5(uint256 startLaneId) external view returns (uint256[7] memory bundle) {
+        for (uint256 j = 0; j < 7; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle6(uint256 startLaneId) external view returns (uint256[8] memory bundle) {
+        for (uint256 j = 0; j < 8; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle7(uint256 startLaneId) external view returns (uint256[2] memory bundle) {
+        for (uint256 j = 0; j < 2; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle8(uint256 startLaneId) external view returns (uint256[3] memory bundle) {
+        for (uint256 j = 0; j < 3; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle9(uint256 startLaneId) external view returns (uint256[4] memory bundle) {
+        for (uint256 j = 0; j < 4; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle10(uint256 startLaneId) external view returns (uint256[5] memory bundle) {
+        for (uint256 j = 0; j < 5; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
+    }
+    function laneBpsBundle11(uint256 startLaneId) external view returns (uint256[6] memory bundle) {
+        for (uint256 j = 0; j < 6; ++j) {
+            uint256 laneId = startLaneId + j;
+            bundle[j] = lanes[laneId].asset == address(0) ? 0 : laneLastBps[laneId];
+        }
